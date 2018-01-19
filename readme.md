@@ -163,36 +163,95 @@ export default typeof fetch=='function' ? fetch.bind()      // fetch.bind() ,使
 数据获取后，`response` 触发
 
 ``` js
-		function response() {
-			let keys = [],
-				all = [],
-				headers = {},
-				header;
+function response() {
+    let keys = [],
+        all = [],
+        headers = {},
+        header;
 
-			request.getAllResponseHeaders().replace(/^(.*?):\s*?([\s\S]*?)$/gm, (m, key, value) => {
-				keys.push(key = key.toLowerCase());
-				all.push([key, value]);
-				header = headers[key];
-				headers[key] = header ? `${header},${value}` : value;
-			});
+    request.getAllResponseHeaders().replace(/^(.*?):\s*?([\s\S]*?)$/gm, (m, key, value) => {
+        keys.push(key = key.toLowerCase()); // 所有 key
+        all.push([key, value]); // 
+        header = headers[key];
+        headers[key] = header ? `${header},${value}` : value;
+    });
 
-			return {
-				ok: (request.status/100|0) == 2,		// 200-299
-				status: request.status,
-				statusText: request.statusText,
-				url: request.responseURL,
-				clone: response,
-				text: () => Promise.resolve(request.responseText),
-				json: () => Promise.resolve(request.responseText).then(JSON.parse),
-				blob: () => Promise.resolve(new Blob([request.response])),
-				headers: {
-					keys: () => keys,
-					entries: () => all,
-					get: n => headers[n.toLowerCase()],
-					has: n => n.toLowerCase() in headers
-				}
-			};
-		}
+    return {
+        ok: (request.status/100|0) == 2,		// 200-299
+        status: request.status,
+        statusText: request.statusText,
+        url: request.responseURL,
+        clone: response,
+        text: () => Promise.resolve(request.responseText),
+        json: () => Promise.resolve(request.responseText).then(JSON.parse),
+        blob: () => Promise.resolve(new Blob([request.response])),
+        headers: {
+            keys: () => keys,
+            entries: () => all,
+            get: n => headers[n.toLowerCase()],
+            has: n => n.toLowerCase() in headers
+        }
+    };
+}
 ```
 
-- 
+- `getAllResponseHeaders`
+
+> 返回所有响应头信息(响应头名和值), 如果响应头还没接受,则返回null. 
+
+> 注意: For multipart requests, this returns the headers from the current part of the request, not from the original channel.
+---
+
+> 返回的对象-解释
+
+1. ok 
+
+> : 是否成功 2==ok
+
+2. status 
+
+>: 状态
+
+3. statusText
+
+> 该请求的响应状态信息,包含一个状态码和原因短语 (例如 "200 OK"). 只读.
+
+4. url
+
+> 该请求所要访问的URL
+
+5. clone
+
+> 本函数
+
+6. text : `function`
+
+> 返回异步-获取-「`String`类型」数据
+
+7. json : `function`
+
+> 返回异步-获取-「`JSON`格式」数据
+
+8. blob : `function`
+
+> 返回异步-获取-「`Blob`格式」数据
+
+9. headers : `object`
+
+    - keys : `function`
+
+    > 返回 `[]` - `[key, key1,...]` 请求头
+
+    - entries : `function`
+
+    > 返回 `[]` - `[[key, value],[key1, value1,..]` 请求头
+
+    - get : `function(n)`
+    
+    > 返回 `string` headers[n] 请求头
+    
+
+    - has : `function`
+
+    > 返回 `Boolean`,是否在请求头
+    
